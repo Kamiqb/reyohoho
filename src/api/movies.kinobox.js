@@ -12,6 +12,7 @@ const api = axios.create({
     'Content-Type': 'application/json'
     // Никаких Referer и Origin здесь быть не должно!
   }
+})
 
 const simulateErrorIfNeeded = async () => {
   if (isErrorSimulationEnabled && simulatedErrorCode) {
