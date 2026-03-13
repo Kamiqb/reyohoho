@@ -39,13 +39,7 @@ const ensureUniqueKey = (obj, baseKey) => {
 
 const normalizePlayerType = (value) => String(value || 'Player').trim()
 
-const toPlayersMap = (providers = [], { type = null, translationId = null } = {}) => {
-  const players = {}
-  const selectedType = type ? String(type).toLowerCase() : null
-  
-  // Мы убираем selectedTranslationId, так как больше не будем фильтровать по озвучкам здесь
-
-  const toPlayersMap = (providers = [], { type = null } = {}) => {
+const toPlayersMap = (providers = [], { type = null } = {}) => {
   const players = {}
   const selectedType = type ? String(type).toLowerCase() : null
 
@@ -60,11 +54,6 @@ const toPlayersMap = (providers = [], { type = null, translationId = null } = {}
     const providerLabel = `KINOBOX>${providerType}`
 
     if (providerBaseIframe) {
-      // Логируем ссылку Alloha для отладки 404
-      if (providerType.toLowerCase() === 'alloha') {
-        console.log('Alloha Iframe URL:', providerBaseIframe)
-      }
-
       const key = ensureUniqueKey(players, providerLabel)
       players[key] = {
         name: key,
@@ -76,7 +65,6 @@ const toPlayersMap = (providers = [], { type = null, translationId = null } = {}
         raw_data: provider
       }
     }
-    // Цикл с translations удален, чтобы не плодить озвучки
   }
 
   return players
