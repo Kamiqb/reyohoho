@@ -51,21 +51,22 @@
     >
       <div class="iframe-wrapper" :style="!theaterMode ? iframeWrapperStyle : {}">
         <iframe
-          v-show="!iframeLoading && selectedPlayerInternal?.iframe"
-          ref="playerIframe"
-          :src="selectedPlayerInternal?.iframe"
-          referrerpolicy="no-referrer"
-          frameborder="0"
-          allowfullscreen
-          webkitallowfullscreen
-          class="responsive-iframe"
-          :class="{
-            'theater-mode-unlock': closeButtonVisible,
-            'theater-mode-lock': theaterMode,
-            dimmed: dimmingEnabled
-          }"
-          @load="onIframeLoad"
-        ></iframe>
+  v-show="!iframeLoading && selectedPlayerInternal?.iframe"
+  ref="playerIframe"
+  :src="selectedPlayerInternal?.iframe"
+  referrerpolicy="no-referrer"
+  sandbox="allow-forms allow-pointer-lock allow-same-origin allow-scripts allow-top-navigation"
+  frameborder="0"
+  allowfullscreen
+  webkitallowfullscreen
+  class="responsive-iframe"
+  :class="{
+    'theater-mode-unlock': closeButtonVisible,
+    'theater-mode-lock': theaterMode,
+    dimmed: dimmingEnabled
+  }"
+  @load="onIframeLoad"
+></iframe>
         <SpinnerLoading
           v-if="iframeLoading"
           :text="`Загружается плеер: ${selectedPlayerInternal ? cleanName(selectedPlayerInternal.translate) : 'Загружается список плееров'}\nЕсли плеер не грузится, то смените плеер выше или включите VPN`"
