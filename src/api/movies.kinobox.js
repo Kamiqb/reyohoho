@@ -46,6 +46,9 @@ const toPlayersMap = (providers = [], { type = null, translationId = null } = {}
   // Мы убираем selectedTranslationId, так как больше не будем фильтровать по озвучкам здесь
 
   for (const provider of providers) {
+    if (providerBaseIframe) {
+  console.log(`Плеер: ${providerType}, URL: ${providerBaseIframe}`); // Добавьте это
+  const key = ensureUniqueKey(players, providerLabel)
     const providerType = normalizePlayerType(provider?.type)
 
     if (selectedType && providerType.toLowerCase() !== selectedType) {
