@@ -41,6 +41,10 @@ const toPlayersMap = (providers = [], { type = null } = {}) => {
 
   for (const provider of providers) {
     const providerType = normalizePlayerType(provider?.type)
+    
+    if (providerBaseIframe && providerType.toLowerCase() !== 'alloha') {
+     continue
+    }
 
     if (selectedType && providerType.toLowerCase() !== selectedType) {
       continue
