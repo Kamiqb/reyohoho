@@ -45,17 +45,16 @@
     </div>
 
     <!-- Единый контейнер плеера -->
-   <div
+    <div
       ref="containerRef"
       :class="['player-container', { 'theater-mode': theaterMode }]"
       :style="!theaterMode ? containerStyle : {}"
     >
       <div class="iframe-wrapper" :style="!theaterMode ? iframeWrapperStyle : {}">
         <iframe
-  v-show="!iframeLoading && selectedPlayerInternal?.iframe"
+          v-show="!iframeLoading && selectedPlayerInternal?.iframe"
           ref="playerIframe"
           :src="selectedPlayerInternal?.iframe"
-          referrerpolicy="no-referrer"
           frameborder="0"
           allowfullscreen
           webkitallowfullscreen
