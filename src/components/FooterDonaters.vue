@@ -77,19 +77,7 @@
         </span>
       </transition>
 
-      <a
-        class="visitor-badge-link"
-        href="https://visitor-badge.laobi.icu/badge?page_id=dav2010id.reyohoho&left_text=%D0%9F%D1%80%D0%BE%D1%81%D0%BC%D0%BE%D1%82%D1%80%D1%8B%20%D1%81%D0%B0%D0%B9%D1%82%D0%B0&left_color=0f172a&right_color=38bdf8"
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label="Просмотры сайта"
-      >
-        <img
-          class="visitor-badge-image"
-          src="https://visitor-badge.laobi.icu/badge?page_id=dav2010id.reyohoho&left_text=%D0%9F%D1%80%D0%BE%D1%81%D0%BC%D0%BE%D1%82%D1%80%D1%8B%20%D1%81%D0%B0%D0%B9%D1%82%D0%B0&left_color=0f172a&right_color=38bdf8"
-          alt="Просмотры сайта"
-        />
-      </a>
+      
     </div>
   </footer>
 </template>
