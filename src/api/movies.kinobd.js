@@ -313,16 +313,15 @@ const toProviderPlayersMap = (providerMap = {}) => {
     const iframe = extractIframeUrl(value?.iframe)
     if (!iframe) continue
 
+    // Используем ключ провайдера (COLLAPS, KODIK и т.д.) как основное имя
     const baseLabel = String(provider || 'player').toUpperCase()
-    const translate =
-      value?.translate && String(value.translate).trim()
-        ? String(value.translate).trim()
-        : baseLabel
+    
+    // Сохраняем перевод в отдельное поле, но для названия (name) используем бренд
     const key = ensureUniqueKey(players, baseLabel)
 
     players[key] = {
-      name: key,
-      translate,
+      name: key, // Будет отображаться как "COLLAPS", "KODIK"
+      translate: value?.translate || baseLabel, // Озвучка уходит на второй план
       iframe,
       quality: value?.quality || '',
       warning: false,
