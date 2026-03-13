@@ -10,9 +10,8 @@ const KINOBOX_ORIGIN = import.meta.env.VITE_KINOBOX_ORIGIN || 'https://tapeop.de
 const api = axios.create({
   baseURL: KINOBOX_BASE_URL,
   headers: {
-    'Content-Type': 'application/json',
-    Referer: KINOBOX_REFERER,
-    Origin: KINOBOX_ORIGIN
+    'Content-Type': 'application/json'
+    // УДАЛИТЕ ОТСЮДА Referer и Origin
   }
 })
 
