@@ -38,14 +38,9 @@ const ensureUniqueKey = (obj, baseKey) => {
 }
 
 const normalizePlayerType = (value) => String(value || 'Player').trim()
-const toPlayersMap = (providers = [], { type = null, translationId = null } = {}) => {
-  const players = {}
-  const selectedType = type ? String(type).toLowerCase() : null
-  
-  // Мы убираем selectedTranslationId, так как больше не будем фильтровать по озвучкам здесь
 
-  const toPlayersMap = (providers = [], { type = null } = {}) => {
-    const players = {}
+const toPlayersMap = (providers = [], { type = null } = {}) => {
+  const players = {}
   const selectedType = type ? String(type).toLowerCase() : null
 
   for (const provider of providers) {
