@@ -44,8 +44,7 @@
       </div>
     </div>
 
-    <!-- Единый контейнер плеера -->
-    <div
+   <div
       ref="containerRef"
       :class="['player-container', { 'theater-mode': theaterMode }]"
       :style="!theaterMode ? containerStyle : {}"
@@ -55,6 +54,7 @@
           v-show="!iframeLoading && selectedPlayerInternal?.iframe"
           ref="playerIframe"
           :src="selectedPlayerInternal?.iframe"
+          referrerpolicy="no-referrer"
           frameborder="0"
           allowfullscreen
           webkitallowfullscreen
