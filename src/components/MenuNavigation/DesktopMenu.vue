@@ -4,13 +4,14 @@
       <button
         v-if="canGoBack"
         class="back-btn"
+        :aria-label="'Назад'"
         :title="isSidebarOpen ? '' : 'Назад'"
         @click="goBack"
       >
         <i class="fas fa-arrow-left"></i>
         <span v-show="isSidebarOpen" class="back-text">Назад</span>
       </button>
-      <button class="toggle-sidebar-btn" @click="toggleSidebar">
+      <button class="toggle-sidebar-btn" :aria-label="isSidebarOpen ? 'Свернуть меню' : 'Развернуть меню'" @click="toggleSidebar">
         <i :class="isSidebarOpen ? 'fas fa-chevron-left' : 'fas fa-chevron-right'"></i>
       </button>
     </div>
@@ -28,6 +29,7 @@
                 :to="link.to"
                 :exact="link.exact"
                 class="notification-link"
+                :aria-label="link.text"
                 @click="closeSidebar"
               >
                 <NotificationBadge />
@@ -42,6 +44,7 @@
                 link.to ? { to: link.to, exact: link.exact } : { href: link.href, target: '_blank' }
               "
               :class="{ 'support-link': !link.icon }"
+              :aria-label="link.text"
               @click="closeSidebar"
             >
               <template v-if="typeof link.icon === 'string' && link.icon.startsWith('fa')">
@@ -50,10 +53,10 @@
               <template
                 v-else-if="typeof link.icon === 'string' && link.icon.startsWith('https://')"
               >
-                <img :src="link.icon" alt="icon" class="icon-user" />
+                <img :src="link.icon" :alt="link.text" class="icon-user" />
               </template>
               <template v-else>
-                <img src="@/assets/icon-donut.png" alt="icon" class="icon-donut" />
+                <img src="@/assets/icon-donut.png" :alt="link.text" class="icon-donut" />
               </template>
               <span v-show="isSidebarOpen" class="menu-text">{{ link.text }}</span>
             </component>
@@ -63,10 +66,10 @@
             @pointerenter="showTooltip(links.length, $event)"
             @pointerleave="hideTooltip"
           >
-            <a @click="toggleSearch">
+            <button type="button" class="search-toggle-btn" aria-label="Открыть поиск" @click="toggleSearch">
               <i class="fas fa-search"></i>
               <span v-show="isSidebarOpen" class="menu-text">Поиск</span>
-            </a>
+            </button>
           </li>
         </ul>
       </div>
@@ -218,13 +221,7 @@ onBeforeUnmount(() => {
   }
 })
 
-watch(
-  route,
-  (to, from) => {
-    updateNavigationHistory(to, from)
-  },
-  { immediate: false }
-)
+watch(() => route.fullPath, () => updateNavigationHistory(route))
 </script>
 
 <style lang="scss" scoped>
@@ -317,7 +314,8 @@ watch(
   position: relative;
 }
 .nav-links a,
-.nav-links button {
+.nav-links button,
+.notification-link {
   display: flex;
   align-items: center;
   gap: 1rem;
@@ -328,18 +326,26 @@ watch(
   height: 20px;
 }
 
-.side-panel:not(.collapsed) .nav-links a {
+.side-panel:not(.collapsed) .nav-links a,
+.side-panel:not(.collapsed) .nav-links button,
+.side-panel:not(.collapsed) .notification-link {
   min-width: 250px;
 }
 
-.side-panel.collapsed .nav-links a {
+.side-panel.collapsed .nav-links a,
+.side-panel.collapsed .nav-links button,
+.side-panel.collapsed .notification-link {
   justify-content: center;
   padding: 10px;
   min-width: auto;
 }
 
 .nav-links a i,
-.nav-links a img {
+.nav-links a img,
+.nav-links button i,
+.nav-links button img,
+.notification-link i,
+.notification-link img {
   width: 25px;
   display: flex;
   justify-content: center;
@@ -368,19 +374,24 @@ watch(
   opacity: 1;
   margin-left: 8px;
 }
-.side-panel.collapsed .nav-links a {
-  justify-content: center;
-  padding: 10px;
-}
+
 .side-panel.collapsed .nav-links a i,
-.side-panel.collapsed .nav-links a img {
+.side-panel.collapsed .nav-links a img,
+.side-panel.collapsed .nav-links button i,
+.side-panel.collapsed .nav-links button img,
+.side-panel.collapsed .notification-link i,
+.side-panel.collapsed .notification-link img {
   margin: 0;
 }
-.nav-links a {
+
+.nav-links a,
+.nav-links button,
+.notification-link {
   will-change: transform;
 }
 
-.nav-links a:hover {
+.nav-links a:hover,
+.notification-link:hover {
   background: var(--accent-transparent, rgba(108, 92, 231, 0.15));
   color: var(--accent-color, #6c5ce7);
   border-left: 3px solid var(--accent-color, #6c5ce7);
@@ -388,8 +399,38 @@ watch(
 }
 
 .nav-links a:active,
-.nav-links a.router-link-active {
+.nav-links a.router-link-active,
+.notification-link:active,
+.notification-link.router-link-active {
   background: var(--accent-transparent, rgba(108, 92, 231, 0.2));
+  color: var(--accent-color, #6c5ce7);
+  border-left: 3px solid var(--accent-color, #6c5ce7);
+}
+
+.search-toggle-btn {
+  appearance: none;
+  -webkit-appearance: none;
+  background: none;
+  border: none;
+  border-left: 3px solid transparent;
+  box-sizing: border-box;
+  width: 100%;
+  font: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+
+.search-toggle-btn:hover,
+.search-toggle-btn:active {
+  background: var(--accent-transparent, rgba(108, 92, 231, 0.15));
+  color: var(--accent-color, #6c5ce7);
+  transform: translateX(3px);
+  border-left: 3px solid var(--accent-color, #6c5ce7);
+}
+
+.search-toggle-btn:focus-visible {
+  outline: none;
+  background: var(--accent-transparent, rgba(108, 92, 231, 0.15));
   color: var(--accent-color, #6c5ce7);
   border-left: 3px solid var(--accent-color, #6c5ce7);
 }
@@ -419,36 +460,6 @@ watch(
 
 a {
   cursor: pointer;
-}
-
-.notification-link {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  color: rgba(255, 255, 255, 0.8);
-  text-decoration: none;
-  padding: 10px 20px;
-  transition: all 0.3s ease;
-  height: 20px;
-}
-
-.notification-link:hover {
-  background: var(--accent-transparent, rgba(108, 92, 231, 0.15));
-  color: var(--accent-color, #6c5ce7);
-  border-left: 3px solid var(--accent-color, #6c5ce7);
-  transform: translateX(3px);
-}
-
-.notification-link:active,
-.notification-link.router-link-active {
-  background: var(--accent-transparent, rgba(108, 92, 231, 0.2));
-  color: var(--accent-color, #6c5ce7);
-  border-left: 3px solid var(--accent-color, #6c5ce7);
-}
-
-.side-panel.collapsed .notification-link {
-  justify-content: center;
-  padding: 10px;
 }
 
 .back-btn {

@@ -27,3 +27,8 @@ coverage
 *.sln
 *.sw?
 dist.zip
+_user_site_tmp/
+
+# Python
+__pycache__/
+*.py[cod]

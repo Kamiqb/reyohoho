@@ -22,8 +22,10 @@
             <div class="movie-poster-section">
               <img
                 v-lazy="movie.cover"
-                :alt="movie.title"
+                :alt="movie.title ? `Постер ${movie.title}` : 'Постер фильма'"
                 class="movie-poster"
+                width="300"
+                height="450"
                 @error="handleImageError"
               />
             </div>
@@ -81,17 +83,17 @@
 
               <div class="ratings">
                 <div v-if="movie.rating_reyohoho" class="rating rating-our">
-                  <img src="/icons/icon-192x192.png" alt="ReYohoho" class="rating-logo" />
+                  <img :src="appLogoUrl" alt="ReYohoho" class="rating-logo" />
                   {{ movie.rating_reyohoho.toFixed(1) }}
                 </div>
 
                 <div v-if="movie.rating_kp" class="rating rating-kp">
-                  <img src="/src/assets/icon-kp-logo.svg" alt="КП" class="rating-logo" />
+                  <img :src="kpLogoUrl" alt="КП" class="rating-logo" />
                   {{ movie.rating_kp }}
                 </div>
 
                 <div v-if="movie.rating_imdb" class="rating rating-imdb">
-                  <img src="/src/assets/icon-imdb-logo.svg" alt="IMDb" class="rating-logo" />
+                  <img :src="imdbLogoUrl" alt="IMDb" class="rating-logo" />
                   {{ movie.rating_imdb }}
                 </div>
               </div>
@@ -102,7 +104,7 @@
 
               <div class="external-links">
                 <a v-if="movie.url_kp" :href="movie.url_kp" target="_blank" class="external-link">
-                  <img src="/src/assets/icon-kp-logo.svg" alt="КП" />
+                  <img :src="kpLogoUrl" alt="КП" />
                   Кинопоиск
                 </a>
                 <a
@@ -111,7 +113,7 @@
                   target="_blank"
                   class="external-link"
                 >
-                  <img src="/src/assets/icon-imdb-logo.svg" alt="IMDb" />
+                  <img :src="imdbLogoUrl" alt="IMDb" />
                   IMDb
                 </a>
               </div>
@@ -128,7 +130,7 @@
           <button class="modern-dark-btn" @click="close">Закрыть</button>
           <router-link
             v-if="movie && !loading"
-            :to="{ name: 'movie-info', params: { kp_id: movie.kp_id } }"
+            :to="moviePath"
             class="modern-dark-btn primary"
             @click="close"
           >
@@ -145,7 +147,15 @@
 </template>
 
 <script setup>
-defineProps({
+import noPosterImage from '@/assets/image-no-poster.gif'
+import { computed } from 'vue'
+import { getMovieSeoPath } from '@/utils/movieSeo'
+import imdbLogoUrl from '@/assets/icon-imdb-logo.svg'
+import kpLogoUrl from '@/assets/icon-kp-logo.svg'
+
+const appLogoUrl = `${import.meta.env.BASE_URL || '/'}icons/icon-192x192.png`
+
+const props = defineProps({
   isOpen: Boolean,
   movie: Object,
   loading: Boolean,
@@ -153,6 +163,7 @@ defineProps({
 })
 
 const emit = defineEmits(['close', 'get-new-movie'])
+const moviePath = computed(() => getMovieSeoPath(props.movie || {}))
 
 const close = () => {
   emit('close')
@@ -193,7 +204,7 @@ const formatDate = (dateString) => {
 }
 
 const handleImageError = (event) => {
-  event.target.src = '/src/assets/image-no-poster.gif'
+  event.target.src = noPosterImage
 }
 </script>
 

@@ -40,7 +40,9 @@
       <ErrorMessage v-if="errorMessage" :message="errorMessage" :code="errorCode" />
 
       <div v-if="errorMessage" class="content-card">
-        <PlayerComponent
+        <component
+          :is="moviePlayerComponent"
+          v-if="moviePlayerComponent"
           :key="shiki_id"
           :movie-info="movieInfo"
           @update:movie-info="fetchMovieInfo"
@@ -84,8 +86,9 @@
           "
           class="ratings-links"
         >
-          <MovieRating
-            v-if="movieInfo.kinopoisk_id"
+          <component
+            :is="movieRatingComponent"
+            v-if="movieRatingComponent && movieInfo.kinopoisk_id"
             :key="movieInfo.kinopoisk_id"
             :kp-id="movieInfo.kinopoisk_id"
             :show-dash="true"
@@ -204,7 +207,9 @@
           </div>
         </div>
 
-        <PlayerComponent
+        <component
+          :is="moviePlayerComponent"
+          v-if="moviePlayerComponent"
           :key="shiki_id"
           :kp-id="shiki_id"
           :movie-info="movieInfo"
@@ -248,16 +253,15 @@
 </template>
 
 <script setup>
+import noPosterImage from '@/assets/image-no-poster.gif'
 import ErrorMessage from '@/components/ErrorMessage.vue'
 import SpinnerLoading from '@/components/SpinnerLoading.vue'
 import { useBackgroundStore } from '@/store/background'
 import { useNavbarStore } from '@/store/navbar'
 import { onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import MovieRating from '@/components/MovieRating.vue'
 import { getRatingColor } from '@/utils/ratingUtils'
 import { getShikiInfo } from '@/api/movies'
-import PlayerComponent from '@/components/PlayerComponent.vue'
 
 const infoLoading = ref(true)
 const backgroundStore = useBackgroundStore()
@@ -266,6 +270,8 @@ const shiki_id = ref(route.params.shiki_id)
 const errorMessage = ref('')
 const errorCode = ref(null)
 const movieInfo = ref(null)
+const moviePlayerComponent = ref(null)
+const movieRatingComponent = ref(null)
 const navbarStore = useNavbarStore()
 const notificationRef = ref(null)
 
@@ -290,7 +296,7 @@ const formatRatingNumber = (number) => {
 }
 
 const handleImageError = (event) => {
-  event.target.src = '/src/assets/image-no-poster.gif'
+  event.target.src = noPosterImage
 }
 
 const copyMovieMeta = async () => {
@@ -356,7 +362,7 @@ const fetchMovieInfo = async () => {
 const handleApiError = (error) => {
   if (error.response) {
     const status = error.response.status
-    let message = 'Произошла ошибка при загрузке данных'
+    let message
     let code = status
 
     switch (status) {
@@ -408,6 +414,12 @@ watch(
 )
 
 onMounted(() => {
+  import('@/components/PlayerComponent.vue').then((module) => {
+    moviePlayerComponent.value = module.default
+  })
+  import('@/components/MovieRating.vue').then((module) => {
+    movieRatingComponent.value = module.default
+  })
   if (!movieInfo.value) {
     fetchMovieInfo()
   }

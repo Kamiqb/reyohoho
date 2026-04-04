@@ -49,10 +49,16 @@
               v-for="movie in movies"
               :key="movie.id"
               class="search__movie movie"
-              :to="{ name: 'movie-info', params: { kp_id: movie.kp_id } }"
+              :to="getMoviePath(movie)"
               @click="closeModal"
             >
-              <img :src="movie.poster" alt="poster" class="movie__poster" />
+              <img
+                :src="movie.poster"
+                :alt="getMovieName(movie.raw_data) ? `Постер ${getMovieName(movie.raw_data)}` : 'Постер фильма'"
+                class="movie__poster"
+                width="120"
+                height="180"
+              />
               <div class="movie__info">
                 <div class="movie__title">
                   {{ getMovieName(movie.raw_data) }}
@@ -88,16 +94,18 @@ import { TYPES_ENUM } from '@/constants'
 import { handleApiError } from '@/constants'
 import { useNavbarStore } from '@/store/navbar'
 import { hasConsecutiveConsonants, suggestLayout, convertLayout } from '@/utils/keyboardLayout'
-import debounce from 'lodash/debounce'
+import debounce from 'lodash.debounce'
 import { ref, watch, nextTick, onMounted, onUnmounted, computed } from 'vue'
 import { useMainStore } from '@/store/main'
 import { getRatingColor } from '@/utils/ratingUtils'
 import { getMovieName } from '@/utils/textUtils'
+import { getMovieSeoPath } from '@/utils/movieSeo'
 
 const navbarStore = useNavbarStore()
 
 const searchTerm = ref('')
 const movies = ref([])
+const getMoviePath = (movie) => getMovieSeoPath(movie)
 const loading = ref(false)
 
 // Глобальные переменные для ошибок

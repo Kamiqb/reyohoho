@@ -68,12 +68,22 @@
               />
             </span>
           </h2>
-          <div v-if="loading" class="loading-container">
+          <div v-if="historyLoading" class="loading-container">
             <SpinnerLoading />
           </div>
           <div v-else-if="history.length === 0" class="empty-history">
-            <span class="material-icons">movie</span>
-            <p>Здесь пока пусто</p>
+            <template v-if="topMovies.length > 0">
+              <p>Здесь пока пусто</p>
+              <h2>Популярное сейчас</h2>
+              <MovieList :movies-list="topMovies" :is-history="false" :loading="false" />
+            </template>
+            <template v-else-if="topMoviesLoading">
+              <SpinnerLoading />
+            </template>
+            <template v-else>
+              <span class="material-icons">movie</span>
+              <p>Здесь пока пусто</p>
+            </template>
           </div>
           <MovieList
             v-else
@@ -126,6 +136,7 @@ import {
   apiSearch,
   getKpIDfromIMDB,
   getKpIDfromSHIKI,
+  getMovies,
   getRandomMovie,
   getKpInfo
 } from '@/api/movies'
@@ -140,11 +151,14 @@ import { useMainStore } from '@/store/main'
 import { useAuthStore } from '@/store/auth'
 import { USER_LIST_TYPES_ENUM } from '@/constants'
 import { hasConsecutiveConsonants, suggestLayout, convertLayout } from '@/utils/keyboardLayout'
-import debounce from 'lodash/debounce'
-import { watchEffect, onMounted, ref, watch, computed } from 'vue'
+import { normalizeBasePath } from '@/utils/basePath'
+import debounce from 'lodash.debounce'
+import { onMounted, onServerPrefetch, ref, watch, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { useHead } from '@unhead/vue'
 import SpinnerLoading from '@/components/SpinnerLoading.vue'
 import RandomMovieModal from '@/components/RandomMovieModal.vue'
+import { getMovieSeoPath } from '@/utils/movieSeo'
 
 const mainStore = useMainStore()
 const authStore = useAuthStore()
@@ -154,12 +168,15 @@ const searchType = ref('title')
 const searchTerm = ref('')
 const movies = ref([])
 const loading = ref(false)
+const historyLoading = ref(false)
 const searchPerformed = ref(false)
 const showModal = ref(false)
 const errorMessage = ref('')
 const errorCode = ref(null)
 const isMobile = computed(() => mainStore.isMobile)
 const history = ref([])
+const topMovies = ref([])
+const topMoviesLoading = ref(false)
 
 const showLayoutWarning = ref(false)
 const suggestedLayout = ref('')
@@ -170,29 +187,114 @@ const randomLoading = ref(false)
 const randomError = ref('')
 
 const searchInput = ref(null)
+const siteOrigin = import.meta.env.VITE_SITE_ORIGIN || 'https://kamiqb.github.io'
+const basePath = normalizeBasePath(import.meta.env.VITE_BASE_URL || '/reyohoho')
+const canonicalUrl = `${siteOrigin}${basePath || ''}/`
+const homeTitle = 'ReYohoho - поиск фильмов и сериалов онлайн бесплатно'
+const homeDescription =
+  'ReYohoho - онлайн-поиск фильмов и сериалов с быстрым переходом к просмотру, рейтингами, подборками, историей просмотров и удобной навигацией.'
 
-watchEffect(async () => {
-  if (authStore.token) {
-    loading.value = true
-    try {
-      history.value = await getMyLists(USER_LIST_TYPES_ENUM.HISTORY)
-    } catch (error) {
-      const { message, code } = handleApiError(error)
-      errorMessage.value = message
-      errorCode.value = code
-      console.error('Ошибка загрузки истории:', error)
-      if (code === 401) {
-        authStore.logout()
-        await router.push('/login')
-        router.go(0)
-      }
-    } finally {
-      loading.value = false
+useHead({
+  title: homeTitle,
+  link: [
+    { rel: 'canonical', href: canonicalUrl },
+    { rel: 'alternate', hreflang: 'ru', href: canonicalUrl },
+    { rel: 'alternate', hreflang: 'x-default', href: canonicalUrl }
+  ],
+  meta: [
+    { name: 'description', content: homeDescription },
+    { property: 'og:type', content: 'website' },
+    { property: 'og:title', content: 'ReYohoho - поиск фильмов и сериалов онлайн' },
+    { property: 'og:description', content: homeDescription },
+    { property: 'og:url', content: canonicalUrl },
+    { property: 'og:locale', content: 'ru_RU' },
+    { name: 'twitter:card', content: 'summary' },
+    { name: 'twitter:title', content: 'ReYohoho - поиск фильмов и сериалов онлайн' },
+    { name: 'twitter:description', content: homeDescription }
+  ],
+  script: [
+    {
+      type: 'application/ld+json',
+      textContent: JSON.stringify([
+        {
+          '@context': 'https://schema.org',
+          '@type': 'Organization',
+          name: 'ReYohoho',
+          url: canonicalUrl,
+          logo: `${siteOrigin}${basePath || ''}/icons/icon-192x192.png`
+        },
+        {
+          '@context': 'https://schema.org',
+          '@type': 'WebSite',
+          name: 'ReYohoho',
+          url: canonicalUrl,
+          inLanguage: 'ru',
+          potentialAction: {
+            '@type': 'SearchAction',
+            target: `${canonicalUrl}#search={search_term_string}`,
+            'query-input': 'required name=search_term_string'
+          }
+        }
+      ])
     }
-  } else {
-    history.value = mainStore.history
-  }
+  ]
 })
+
+const loadHomeTopMovies = async () => {
+  topMoviesLoading.value = true
+  try {
+    topMovies.value = await getMovies({
+      activeTime: '24h',
+      typeFilter: 'all'
+    })
+  } catch (error) {
+    console.error('Ошибка загрузки топов для главной:', error)
+    topMovies.value = []
+  } finally {
+    topMoviesLoading.value = false
+  }
+}
+
+onServerPrefetch(loadHomeTopMovies)
+
+watch(
+  () => authStore.token,
+  async (token) => {
+    if (token) {
+      history.value = mainStore.history
+      historyLoading.value = mainStore.history.length === 0
+      try {
+        const serverHistory = await getMyLists(USER_LIST_TYPES_ENUM.HISTORY)
+        mainStore.setHistory(serverHistory)
+        history.value = serverHistory
+      } catch (error) {
+        const { message, code } = handleApiError(error)
+        errorMessage.value = message
+        errorCode.value = code
+        console.error('Ошибка загрузки истории:', error)
+        if (code === 401) {
+          authStore.logout()
+          await router.push('/login')
+          router.go(0)
+        }
+      } finally {
+        historyLoading.value = false
+      }
+      return
+    }
+
+    history.value = mainStore.history
+  },
+  { immediate: true }
+)
+
+watch(
+  () => mainStore.history,
+  (newHistory) => {
+    history.value = newHistory
+  },
+  { deep: true }
+)
 
 function handleItemDeleted(deletedItemId) {
   history.value = history.value.filter((item) => item.kp_id !== deletedItemId)
@@ -270,7 +372,7 @@ const performSearch = async () => {
       if (!/^\d+$/.test(searchTerm.value)) {
         searchTerm.value = searchTerm.value.replace(/\D/g, '')
       }
-      router.push({ name: 'movie-info', params: { kp_id: searchTerm.value } })
+      router.push(getMovieSeoPath({ kp_id: searchTerm.value }))
       return
     }
 
@@ -280,7 +382,7 @@ const performSearch = async () => {
       }
       const response = await getKpIDfromIMDB(searchTerm.value)
       if (response.id_kp) {
-        router.push({ name: 'movie-info', params: { kp_id: `${response.id_kp}` } })
+        router.push(getMovieSeoPath({ kp_id: `${response.id_kp}` }))
       } else {
         throw new Error('Не найдено')
       }
@@ -295,7 +397,7 @@ const performSearch = async () => {
       try {
         const response = await getKpIDfromSHIKI(searchTerm.value)
         if (response.id_kp) {
-          router.push({ name: 'movie-info', params: { kp_id: `${response.id_kp}` } })
+          router.push(getMovieSeoPath({ kp_id: `${response.id_kp}` }))
           return
         }
       } catch (e) {
@@ -325,12 +427,16 @@ const performSearch = async () => {
 }
 
 const clearAllHistory = async () => {
-  loading.value = true
+  historyLoading.value = true
   if (authStore.token) {
     try {
       await delAllFromList(USER_LIST_TYPES_ENUM.HISTORY)
+      mainStore.clearAllHistory()
       history.value = []
-      loading.value = false
+      if (!topMovies.value.length) {
+        loadHomeTopMovies()
+      }
+      historyLoading.value = false
       showModal.value = false
     } catch (error) {
       const { message, code } = handleApiError(error)
@@ -342,12 +448,16 @@ const clearAllHistory = async () => {
         await router.push('/login')
         router.go(0)
       }
-      loading.value = false
+      historyLoading.value = false
       showModal.value = false
     }
   } else {
     mainStore.clearAllHistory()
-    loading.value = false
+    history.value = []
+    if (!topMovies.value.length) {
+      loadHomeTopMovies()
+    }
+    historyLoading.value = false
     showModal.value = false
   }
 }
@@ -362,6 +472,9 @@ const debouncedPerformSearch = debounce(() => {
 }, 700)
 
 onMounted(() => {
+  if (!topMovies.value.length) {
+    loadHomeTopMovies()
+  }
   const hash = window.location.hash
   if (hash.startsWith('#search=')) {
     const searchQuery = decodeURIComponent(hash.replace('#search=', ''))
@@ -688,6 +801,10 @@ h2 {
   font-size: 18px;
   margin: 0;
   color: #888;
+}
+
+.empty-history > div {
+  width: 100%;
 }
 
 @media (max-width: 600px) {

@@ -77,7 +77,19 @@
         </span>
       </transition>
 
-      
+      <a
+        class="visitor-badge-link"
+        href="https://visitor-badge.laobi.icu/badge?page_id=kamiqb.reyohoho&left_text=%D0%9F%D1%80%D0%BE%D1%81%D0%BC%D0%BE%D1%82%D1%80%D1%8B%20%D1%81%D0%B0%D0%B9%D1%82%D0%B0&left_color=0f172a&right_color=38bdf8"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Просмотры сайта"
+      >
+        <img
+          class="visitor-badge-image"
+          src="https://visitor-badge.laobi.icu/badge?page_id=kamiqb.reyohoho&left_text=%D0%9F%D1%80%D0%BE%D1%81%D0%BC%D0%BE%D1%82%D1%80%D1%8B%20%D1%81%D0%B0%D0%B9%D1%82%D0%B0&left_color=0f172a&right_color=38bdf8"
+          alt="Просмотры сайта"
+        />
+      </a>
     </div>
   </footer>
 </template>
@@ -153,7 +165,7 @@ const featuredDonors = ref([
     category: null,
     originalIndex: 5
   },
-  { 
+  {
     name: 'RomanovaLera',
     twitchUsername: 'RomanovaLera',
     avatar: null,
@@ -161,7 +173,6 @@ const featuredDonors = ref([
     category: null,
     originalIndex: 6
   }
-
 ])
 
 const currentDonater = computed(() => {
@@ -299,10 +310,8 @@ const fetchTwitchData = async () => {
 }
 
 const updateDonorsWithTwitchData = (twitchData) => {
-  const twitchMap = new Map(
-    twitchData.map((d) => [d.username.toLowerCase(), d])
-  )
-  
+  const twitchMap = new Map(twitchData.map((d) => [d.username.toLowerCase(), d]))
+
   let hasChanges = false
   const updatedDonors = featuredDonors.value.map((donor) => {
     if (!donor.twitchUsername) return donor
@@ -312,7 +321,7 @@ const updateDonorsWithTwitchData = (twitchData) => {
       const newIsLive = streamData.isLive || false
       const newCategory = streamData.category || null
       const newAvatar = streamData.avatar || donor.avatar
-      
+
       if (
         donor.isLive !== newIsLive ||
         donor.category !== newCategory ||
@@ -329,7 +338,7 @@ const updateDonorsWithTwitchData = (twitchData) => {
     }
     return donor
   })
-  
+
   if (hasChanges) {
     updatedDonors.sort((a, b) => {
       if (a.isLive !== b.isLive) {
@@ -480,7 +489,10 @@ footer {
   background: #18181b;
   border-radius: 6px;
   overflow: hidden;
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
   cursor: pointer;
   position: relative;
   border: 2px solid transparent;
@@ -526,7 +538,9 @@ footer {
   background-position: center;
   background-repeat: no-repeat;
   filter: brightness(0.9);
-  transition: filter 0.3s ease, transform 0.3s ease;
+  transition:
+    filter 0.3s ease,
+    transform 0.3s ease;
   position: relative;
   display: flex;
   align-items: center;
@@ -709,12 +723,13 @@ footer {
   display: inline-flex;
   align-items: center;
   line-height: 0;
-  margin-left: 2px;
-  position: relative;
-  left: -8px;
+  margin-left: 6px;
   opacity: 0.88;
   filter: saturate(0.92);
-  transition: opacity 0.2s ease, transform 0.2s ease, filter 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease,
+    filter 0.2s ease;
 }
 
 .visitor-badge-link:hover {
@@ -780,7 +795,7 @@ footer {
   }
 
   .visitor-badge-link {
-    left: -5px;
+    margin-left: 4px;
   }
 
   .visitor-badge-link:hover {
@@ -845,7 +860,7 @@ footer {
   }
 
   .visitor-badge-link {
-    left: -2px;
+    margin-left: 0;
   }
 
   .visitor-badge-link:hover {
@@ -853,4 +868,3 @@ footer {
   }
 }
 </style>
-

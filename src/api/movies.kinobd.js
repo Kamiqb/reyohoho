@@ -313,15 +313,16 @@ const toProviderPlayersMap = (providerMap = {}) => {
     const iframe = extractIframeUrl(value?.iframe)
     if (!iframe) continue
 
-    // Используем ключ провайдера (COLLAPS, KODIK и т.д.) как основное имя
     const baseLabel = String(provider || 'player').toUpperCase()
-    
-    // Сохраняем перевод в отдельное поле, но для названия (name) используем бренд
+    const translate =
+      value?.translate && String(value.translate).trim()
+        ? String(value.translate).trim()
+        : baseLabel
     const key = ensureUniqueKey(players, baseLabel)
 
     players[key] = {
-      name: key, // Будет отображаться как "COLLAPS", "KODIK"
-      translate: value?.translate || baseLabel, // Озвучка уходит на второй план
+      name: key,
+      translate,
       iframe,
       quality: value?.quality || '',
       warning: false,
@@ -432,6 +433,20 @@ const getKpInfo = async (kpId) => {
       : [],
     similars: Array.isArray(rhFilm?.similars) ? rhFilm.similars : []
   }
+}
+
+const getMovieSeoByKpId = async (kpId) => {
+  const { data } = await apiCall((api) =>
+    api.get('/api/films/search/kp_id', {
+      params: {
+        q: String(kpId),
+        page: 1
+      }
+    })
+  )
+
+  const film = Array.isArray(data?.data) ? data.data[0] : null
+  return film ? buildLegacyMovie(film) : null
 }
 
 const getPlayers = async (kpId, options = {}) => {
@@ -555,6 +570,7 @@ export {
   searchPlayerCandidates,
   getPlayerDataByInid,
   apiSearch,
+  getMovieSeoByKpId,
   getShikiInfo,
   getKpInfo,
   getPlayers,

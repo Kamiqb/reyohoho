@@ -1,6 +1,10 @@
 <template>
   <div>
-    <div v-show="!loading" class="grid" :class="`card-size-${cardSize}`">
+    <div
+      v-show="!loading"
+      class="grid"
+      :class="[`card-size-${cardSize}`, `variant-${variant}`]"
+    >
       <template v-if="(isHistory || isUserList) && isMobile">
         <CardMovieSwipeWrapper
           v-for="(movie, index) in moviesList"
@@ -19,6 +23,7 @@
             :active-movie-index
             :show-delete="showDelete"
             :show-star="showStar"
+            :variant="variant"
             @remove:from-history="removeFromHistory"
             @save:element="(el) => (movieRefs[index] = el)"
           />
@@ -38,6 +43,7 @@
           :active-movie-index
           :show-delete="showDelete"
           :show-star="showStar"
+          :variant="variant"
           @remove:from-history="removeFromHistory"
           @save:element="(el) => (movieRefs[index] = el)"
         />
@@ -71,13 +77,15 @@ const {
   isHistory = false,
   loading = true,
   showDelete = true,
-  showStar = false
+  showStar = false,
+  variant = 'default'
 } = defineProps({
   moviesList: Array,
   isHistory: Boolean,
   loading: Boolean,
   showDelete: Boolean,
-  showStar: Boolean
+  showStar: Boolean,
+  variant: String
 })
 
 const movieRefs = ref([])
@@ -102,6 +110,7 @@ const removeFromHistory = async (kp_id) => {
   if (authStore.token) {
     try {
       await delFromList(kp_id, USER_LIST_TYPES_ENUM.HISTORY)
+      mainStore.removeFromHistory(kp_id)
       emit('item-deleted', kp_id)
     } catch (error) {
       const { code } = handleApiError(error)
@@ -114,6 +123,7 @@ const removeFromHistory = async (kp_id) => {
     }
   } else {
     mainStore.removeFromHistory(kp_id)
+    emit('item-deleted', kp_id)
   }
 }
 
@@ -222,11 +232,15 @@ onUnmounted(() => {
   gap: 20px;
 }
 
+.grid.variant-related {
+  min-height: 0;
+}
+
 @media (max-width: 620px) {
   .grid {
     grid-template-columns: 1fr;
     gap: 10px;
-    padding: 8px;
+    padding: 5px;
   }
 }
 </style>

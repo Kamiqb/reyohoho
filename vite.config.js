@@ -1,7 +1,6 @@
 import { defineConfig, loadEnv } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { VitePWA } from 'vite-plugin-pwa'
-import legacy from '@vitejs/plugin-legacy'
 import eslintPlugin from 'vite-plugin-eslint'
 
 const base = process.env.VITE_BASE_URL || '/'
@@ -9,7 +8,6 @@ const base = process.env.VITE_BASE_URL || '/'
 export default defineConfig(({ mode }) => {
   process.env = { ...process.env, ...loadEnv(mode, process.cwd()) }
   const isDistEnv = process.env.NODE_ENV === 'production'
-  const isDev = mode === 'development'
   const now = new Date()
   const formattedDate =
     now
@@ -30,10 +28,6 @@ export default defineConfig(({ mode }) => {
     base: base,
     plugins: [
       vue(),
-      legacy({
-        targets: ['defaults', 'not IE 11', 'Chrome >= 47'],
-        additionalLegacyPolyfills: ['regenerator-runtime/runtime']
-      }),
       VitePWA({
         registerType: 'autoUpdate',
         injectRegister: 'inline',
@@ -116,17 +110,13 @@ export default defineConfig(({ mode }) => {
           ]
         }
       }),
-      ...(isDev
-        ? [
-            eslintPlugin({
-              include: ['src/**/*.js', 'src/**/*.vue', 'src/**/*.jsx', 'src/**/*.ts', 'src/**/*.tsx'],
-              failOnError: true,
-              failOnWarning: false,
-              cache: false,
-              emitError: true
-            })
-          ]
-        : [])
+      eslintPlugin({
+        include: ['src/**/*.js', 'src/**/*.vue', 'src/**/*.jsx', 'src/**/*.ts', 'src/**/*.tsx'],
+        failOnError: true,
+        failOnWarning: false,
+        cache: false,
+        emitError: true
+      })
     ],
     resolve: {
       alias: {

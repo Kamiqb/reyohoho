@@ -8,7 +8,7 @@
   >
     <div class="notification-content">
       <div v-if="notification.movie_cover" class="movie-poster">
-        <router-link :to="`/movie/${notification.movie_id}`">
+        <router-link :to="moviePath">
           <img :src="notification.movie_cover" :alt="notification.movie_title" class="poster-img" />
         </router-link>
       </div>
@@ -16,7 +16,7 @@
       <div class="notification-main">
         <div class="notification-header">
           <div class="notification-info">
-            <router-link :to="`/movie/${notification.movie_id}`" class="movie-title">{{
+            <router-link :to="moviePath" class="movie-title">{{
               notification.movie_title
             }}</router-link>
           </div>
@@ -36,17 +36,21 @@
         >
           <div v-if="notification.comment_content" class="original-comment">
             <i class="fas fa-quote-left"></i>
+            <!-- eslint-disable vue/no-v-html -->
             <span
               class="comment-text"
               v-html="formatCommentContent(notification.comment_content)"
             ></span>
+            <!-- eslint-enable vue/no-v-html -->
           </div>
           <div v-if="notification.reply_content" class="reply-comment">
             <i class="fas fa-reply"></i>
+            <!-- eslint-disable vue/no-v-html -->
             <span
               class="comment-text"
               v-html="formatCommentContent(notification.reply_content)"
             ></span>
+            <!-- eslint-enable vue/no-v-html -->
           </div>
         </div>
       </div>
@@ -76,8 +80,10 @@
 </template>
 
 <script setup>
+import { computed } from 'vue'
 import { formatRelativeTime } from '@/utils/dateUtils'
 import { useCommentFormatting } from '@/composables/useCommentFormatting'
+import { getMovieSeoPath } from '@/utils/movieSeo'
 
 const props = defineProps({
   notification: {
@@ -87,6 +93,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['mark-read', 'delete'])
+const moviePath = computed(() => getMovieSeoPath({ kp_id: props.notification.movie_id }))
 
 const { formatContent } = useCommentFormatting()
 

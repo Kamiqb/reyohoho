@@ -2,12 +2,10 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { nextTick } from 'vue'
 import { routes } from './routes'
 import { useMainStore } from '@/store/main'
+import { useAuthStore } from '@/store/auth'
 import { handleHashNavigation } from '@/helpers/hashHandler'
 import { useScrollTracking } from '@/composables/useScrollTracking'
-
-const base = import.meta.env.VITE_BASE_URL || '/'
-const { userHasScrolled, startTracking } = useScrollTracking()
-let hasTrackedInitialRoute = false
+import { buildMoviePath, getMovieSeoEntry } from '@/utils/movieSeo'
 
 const shouldSkipGoatCounterTracking = (to) => {
   const path = to?.path || ''
@@ -29,16 +27,16 @@ const trackGoatCounterPageView = (to, attempt = 0) => {
     return
   }
 
-  // GoatCounter script is async in index.html; short retries cover fast route changes.
   if (attempt < 10) {
     setTimeout(() => trackGoatCounterPageView(to, attempt + 1), 200)
   }
 }
 
-const router = createRouter({
-  history: createWebHistory(base),
+export const createRouterOptions = () => ({
+  history: createWebHistory(import.meta.env.VITE_BASE_URL || '/'),
   routes,
   scrollBehavior(to, _from, savedPosition) {
+    const { userHasScrolled } = useScrollTracking()
     const mainStore = useMainStore()
 
     return new Promise((resolve) => {
@@ -48,40 +46,77 @@ const router = createRouter({
         } else if (
           savedPosition &&
           mainStore.rememberScrollPosition &&
-          !userHasScrolled &&
+          !userHasScrolled.value &&
           (to.name === 'top-movies' || to.name === 'lists')
         ) {
-          setTimeout(() => {
-            return resolve(savedPosition)
-          }, 1000)
+          setTimeout(() => resolve(savedPosition), 1000)
         } else {
-          return resolve({ top: 0, behavior: 'smooth' })
+          resolve({ top: 0, behavior: 'smooth' })
         }
       })
     })
   }
 })
 
-router.beforeEach((to, _from, next) => {
-  const title = to.meta.title || 'ReYohoho'
-  document.title = title
+export const installRouterGuards = (router, { isClient = typeof window !== 'undefined' } = {}) => {
+  const { startTracking } = useScrollTracking()
+  let hasTrackedInitialRoute = false
 
-  startTracking()
+  router.beforeEach((to, _from, next) => {
+    if (to.meta?.requiresAuth) {
+      const authStore = useAuthStore()
 
-  if (to.hash) {
-    handleHashNavigation(to, next)
-  } else {
-    next()
+      if (!authStore.isAuthenticated) {
+        next({
+          name: 'login',
+          query: {
+            redirect: to.fullPath
+          }
+        })
+        return
+      }
+    }
+
+    if (to.name === 'movie-info' && to.params?.kp_id) {
+      const entry = getMovieSeoEntry(to.params.kp_id)
+      const currentSlug = String(to.params.slug || '').trim()
+
+      if (entry?.slug && currentSlug !== entry.slug) {
+        next({
+          path: buildMoviePath(to.params.kp_id, entry.slug),
+          query: to.query,
+          hash: to.hash,
+          replace: true
+        })
+        return
+      }
+    }
+
+    if (isClient) {
+      document.title = to.meta.title || 'ReYohoho'
+      startTracking()
+    }
+
+    if (to.hash) {
+      handleHashNavigation(to, next)
+    } else {
+      next()
+    }
+  })
+
+  if (isClient) {
+    router.afterEach((to) => {
+      if (!hasTrackedInitialRoute) {
+        hasTrackedInitialRoute = true
+        return
+      }
+
+      trackGoatCounterPageView(to)
+    })
   }
-})
 
-router.afterEach((to) => {
-  if (!hasTrackedInitialRoute) {
-    hasTrackedInitialRoute = true
-    return
-  }
+  return router
+}
 
-  trackGoatCounterPageView(to)
-})
-
-export default router
+export const createAppRouter = (options = {}) =>
+  installRouterGuards(createRouter(createRouterOptions()), options)
