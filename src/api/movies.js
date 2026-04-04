@@ -23,9 +23,9 @@ const KINOBOX_SUPPORTED_METHODS = new Set(['getPlayers'])
 const getCurrentProvider = () => {
   try {
     const mainStore = useMainStore()
-    return mainStore.contentApiProvider || CONTENT_PROVIDERS.KINOBD
+    return mainStore.contentApiProvider || CONTENT_PROVIDERS.KINOBOX
   } catch {
-    return CONTENT_PROVIDERS.KINOBD
+    return CONTENT_PROVIDERS.KINOBOX
   }
 }
 
@@ -108,8 +108,10 @@ const submitTiming = async (...args) => callWithProvider('submitTiming', ...args
 const updateTiming = async (...args) => callWithProvider('updateTiming', ...args)
 const deleteTiming = async (...args) => callWithProvider('deleteTiming', ...args)
 const reportTiming = async (...args) => callWithProvider('reportTiming', ...args)
-const getTopTimingSubmitters = async (...args) => callWithProvider('getTopTimingSubmitters', ...args)
-const getAllTimingSubmissions = async (...args) => callWithProvider('getAllTimingSubmissions', ...args)
+const getTopTimingSubmitters = async (...args) =>
+  callWithProvider('getTopTimingSubmitters', ...args)
+const getAllTimingSubmissions = async (...args) =>
+  callWithProvider('getAllTimingSubmissions', ...args)
 const getRandomMovie = async (...args) => callWithProvider('getRandomMovie', ...args)
 const approveTiming = async (...args) => callWithProvider('approveTiming', ...args)
 const rejectTiming = async (...args) => callWithProvider('rejectTiming', ...args)
@@ -171,4 +173,3 @@ export const toggleErrorSimulation = (enabled) => {
     kinobox.toggleErrorSimulation(enabled)
   }
 }
-

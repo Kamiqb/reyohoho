@@ -58,6 +58,7 @@ import { CardMovie, CardMovieSwipeWrapper } from '../CardMovie'
 import { delFromList } from '@/api/user'
 import { handleApiError } from '@/constants'
 import { USER_LIST_TYPES_ENUM } from '@/constants'
+import { getMovieSeoPath } from '@/utils/movieSeo'
 
 const mainStore = useMainStore()
 const authStore = useAuthStore()
@@ -93,7 +94,7 @@ const isUserList = computed(() => {
 })
 
 const movieUrl = (movie) => {
-  return router.resolve({ name: 'movie-info', params: { kp_id: movie.kp_id } }).href
+  return router.resolve(getMovieSeoPath(movie)).href
 }
 
 const emit = defineEmits(['item-deleted'])
@@ -119,9 +120,15 @@ const removeFromHistory = async (kp_id) => {
 const handleKeyDown = (event) => {
   if (!moviesList?.length) return
 
-  if (!event.target?.classList?.contains('movie-card')) {
+  const focusedCard =
+    event.target?.classList?.contains('movie-card') ? event.target : document.activeElement
+
+  if (!focusedCard?.classList?.contains('movie-card')) {
     return
   }
+
+  const focusedIndex = movieRefs.value.findIndex((element) => element === focusedCard)
+  const currentIndex = activeMovieIndex.value ?? (focusedIndex >= 0 ? focusedIndex : 0)
 
   const grid = document.querySelector('.grid')
   const gridStyle = window.getComputedStyle(grid)
@@ -129,25 +136,25 @@ const handleKeyDown = (event) => {
 
   switch (event.key) {
     case 'ArrowRight':
-      activeMovieIndex.value = (activeMovieIndex.value + 1) % moviesList.length
+      activeMovieIndex.value = (currentIndex + 1) % moviesList.length
       break
     case 'ArrowLeft':
-      activeMovieIndex.value = (activeMovieIndex.value - 1 + moviesList.length) % moviesList.length
+      activeMovieIndex.value = (currentIndex - 1 + moviesList.length) % moviesList.length
       break
     case 'ArrowUp':
       event.preventDefault()
-      if (activeMovieIndex.value <= 0) {
+      if (currentIndex <= 0) {
         const searchInput = document.querySelector('.search-input')
         if (searchInput) {
           searchInput.focus()
         }
       } else {
-        activeMovieIndex.value = Math.max(activeMovieIndex.value - columns, 0)
+        activeMovieIndex.value = Math.max(currentIndex - columns, 0)
       }
       break
     case 'ArrowDown':
       event.preventDefault()
-      activeMovieIndex.value = Math.min(activeMovieIndex.value + columns, moviesList.length - 1)
+      activeMovieIndex.value = Math.min(currentIndex + columns, moviesList.length - 1)
       break
     case 'Home':
       activeMovieIndex.value = 0
@@ -158,12 +165,9 @@ const handleKeyDown = (event) => {
     case 'Enter':
       if (event.ctrlKey || event.metaKey) {
         event.preventDefault()
-        window.open(movieUrl(moviesList[activeMovieIndex.value]), '_blank')
+        window.open(movieUrl(moviesList[currentIndex]), '_blank')
       } else {
-        router.push({
-          name: 'movie-info',
-          params: { kp_id: moviesList[activeMovieIndex.value]?.kp_id }
-        })
+        router.push(getMovieSeoPath(moviesList[currentIndex]))
       }
       break
   }
@@ -222,7 +226,7 @@ onUnmounted(() => {
   .grid {
     grid-template-columns: 1fr;
     gap: 10px;
-    padding: 5px;
+    padding: 8px;
   }
 }
 </style>

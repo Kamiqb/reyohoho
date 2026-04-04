@@ -1,7 +1,22 @@
 <template>
   <div class="movie-poster-container" :class="`card-size-${cardSize}`">
     <div v-if="posterSrc">
-      <img v-lazy="posterSrc" class="movie-poster" />
+      <img
+        v-if="isServerRender"
+        :src="posterSrc"
+        class="movie-poster"
+        :alt="movie.title ? `Постер ${movie.title}` : 'Постер фильма'"
+        width="300"
+        height="450"
+      />
+      <img
+        v-else
+        v-lazy="posterSrc"
+        class="movie-poster"
+        :alt="movie.title ? `Постер ${movie.title}` : 'Постер фильма'"
+        width="300"
+        height="450"
+      />
       <DeleteButton
         v-if="!isMobile && (isHistory || isUserList) && showDelete"
         class="delete-button"
@@ -20,11 +35,11 @@
             [getRatingColor(movie.rating || movie.average_rating)]: true
           }"
         >
-          <img src="/icons/icon-192x192.png" alt="ReYohoho" class="rating-logo" />
+          <img :src="appLogoUrl" alt="ReYohoho" class="rating-logo" />
           {{ `${(movie.rating || movie.average_rating).toFixed(1).replace(/\.0$/, '')}` }}
         </span>
         <span v-if="movie.rating_kp" class="rating-kp" :class="getRatingColor(movie.rating_kp)">
-          <img src="/src/assets/icon-kp-logo.svg" alt="КП" class="rating-logo" />
+          <img :src="kpLogoUrl" alt="КП" class="rating-logo" />
           {{ movie.rating_kp }}
         </span>
         <span
@@ -32,11 +47,10 @@
           class="rating-imdb"
           :class="getRatingColor(movie.rating_imdb)"
         >
-          <img src="/src/assets/icon-imdb-logo.svg" alt="IMDb" class="rating-logo" />
+          <img :src="imdbLogoUrl" alt="IMDb" class="rating-logo" />
           {{ movie.rating_imdb }}
         </span>
       </div>
-      <!-- Добавлен блок для отображения типа (сериал/фильм) в правом верхнем углу постера -->
       <div v-if="movie.type && TYPES_ENUM[movie.type]" class="poster-type">
         {{ TYPES_ENUM[movie.type] ?? '' }}
       </div>
@@ -50,13 +64,16 @@
 <script setup>
 import DeleteButton from '@/components/buttons/DeleteButton.vue'
 import { TYPES_ENUM } from '@/constants'
-import { getRatingColor } from '@/utils/ratingUtils'
 import { useMainStore } from '@/store/main'
-import { computed } from 'vue'
 import { resolvePosterByMovie } from '@/utils/mediaUtils'
+import { getRatingColor } from '@/utils/ratingUtils'
+import imdbLogoUrl from '@/assets/icon-imdb-logo.svg'
+import kpLogoUrl from '@/assets/icon-kp-logo.svg'
+import { computed } from 'vue'
 
 const mainStore = useMainStore()
 const cardSize = computed(() => mainStore.cardSize)
+const appLogoUrl = `${import.meta.env.BASE_URL || '/'}icons/icon-192x192.png`
 
 const {
   movie,
@@ -73,7 +90,9 @@ const {
   showDelete: Boolean,
   showStar: Boolean
 })
+
 const emit = defineEmits(['remove:from-history'])
+const isServerRender = import.meta.env.SSR
 
 const posterSrc = computed(() => {
   return resolvePosterByMovie(movie)
@@ -83,6 +102,7 @@ const posterSrc = computed(() => {
 <style scoped>
 .movie-poster-container {
   position: relative;
+  flex-shrink: 0;
 }
 
 .movie-poster {
@@ -111,7 +131,6 @@ const posterSrc = computed(() => {
   align-items: center;
 }
 
-/* Новый стиль для блока с типом, отображаемым в правом верхнем углу постера */
 .poster-type {
   position: absolute;
   top: 5px;
@@ -197,10 +216,12 @@ const posterSrc = computed(() => {
   .movie-poster-container {
     width: 100px;
     min-width: 100px;
+    align-self: stretch;
   }
 
   .movie-poster {
     width: 100px;
+    height: 100%;
     aspect-ratio: 2 / 3;
     border-radius: 10px 0 0 10px;
   }

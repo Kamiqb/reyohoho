@@ -9,7 +9,7 @@
       'card-border': isCardBorder,
       [`card-size-${cardSize}`]: true
     }"
-    :to="{ name: 'movie-info', params: { kp_id: movie.kp_id } }"
+    :to="moviePath"
     :data-test-id="`movie-card-${movie.kp_id}`"
     tabindex="0"
   >
@@ -33,6 +33,7 @@ import CardMovieDetails from './CardMovieDetails.vue'
 import CardsMovieMainContent from './CardsMovieMainContent.vue'
 import { useBackgroundStore } from '@/store/background'
 import { useMainStore } from '@/store/main'
+import { getMovieSeoPath } from '@/utils/movieSeo'
 
 const backgroundStore = useBackgroundStore()
 const mainStore = useMainStore()
@@ -63,6 +64,7 @@ const {
 
 const emit = defineEmits(['remove:from-history', 'save:element'])
 const element = useTemplateRef('element')
+const moviePath = computed(() => getMovieSeoPath(movie))
 
 onMounted(() => {
   if (element.value && element.value.$el) {
@@ -76,6 +78,7 @@ onMounted(() => {
   text-decoration: none;
   color: inherit;
   width: 100%;
+  min-width: 0;
   background: rgba(30, 30, 30, 0.6);
   border-radius: 10px;
   overflow: hidden;
@@ -175,8 +178,9 @@ onMounted(() => {
 @media (max-width: 620px) {
   .movie-card {
     flex-direction: row;
-    align-items: flex-start;
-    height: 200px;
+    align-items: stretch;
+    min-height: 150px;
+    height: auto;
     width: 100%;
     border-radius: 15px;
   }
