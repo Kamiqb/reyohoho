@@ -1,5 +1,5 @@
 <template>
-  <footer :class="{ 'footer-fixed': !isAtBottom, 'footer-static': isAtBottom }">
+  <footer :class="{ 'footer-dynamic': !isAtBottom, 'footer-dynamic': isAtBottom }">
     <div class="donaters-wrapper">
       <span class="donaters-text">Спасибо топ донатерам</span>
 

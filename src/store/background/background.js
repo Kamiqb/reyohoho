@@ -9,7 +9,7 @@ export const useBackgroundStore = defineStore(BACKGROUND_STORE_NAME, {
     topMoviePoster: '',
     moviePoster: '',
     isBlurActive: false,
-    backgroundType: 'stars',
+    backgroundType: 'disabled',
     defaultBackground: starsBackground,
     isCardBorder: false,
     isCardHoverDisabled: false
