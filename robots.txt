@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://dav2010id.github.io/reyohoho/sitemap.xml
+Sitemap: https://kamiqb.github.io/reyohoho/sitemap.xml
