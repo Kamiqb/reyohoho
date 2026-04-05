@@ -85,7 +85,6 @@ export const useBackgroundStore = defineStore(BACKGROUND_STORE_NAME, {
         if (type === 'disabled') {
           this.backgroundUrl = ''
         } else if (type === 'stars') {
-          this.isBlurActive = true
           this.backgroundUrl = starsBackground
         } else if (type === 'lava-lamp') {
           this.backgroundUrl = ''
