@@ -1,4 +1,4 @@
-import starsBackground from '@/assets/anime.png'
+import starsBackground from '@/assets/anime.webp'
 import { defineStore } from 'pinia'
 import { BACKGROUND_STORE_NAME } from '../constants'
 import { beforeHydrateLegacyVuex } from '../utils'
