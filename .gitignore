@@ -32,3 +32,4 @@ _user_site_tmp/
 # Python
 __pycache__/
 *.py[cod]
+/node_modules
