@@ -16,9 +16,12 @@
   <div v-if="dimmingEnabled" class="dimming-overlay" @click="toggleDimming"></div>
 
   <div v-if="showGarland" id="garland" :style="{ backgroundImage: `url(${garlandImage})` }"></div>
+
+  <Analytics />
 </template>
 
 <script setup>
+import { Analytics } from '@vercel/analytics/vue'
 import BackgroundSpace from '@/components/BackgroundSpace.vue'
 import MenuNavigation from '@/components/MenuNavigation.vue'
 import MobileHeader from '@/components/MobileHeader.vue'
